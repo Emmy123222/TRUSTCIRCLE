@@ -1,0 +1,29 @@
+services:
+  - type: worker
+    name: trustcircle-agent
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    plan: starter
+    region: oregon
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PRIVATE_KEY
+        sync: false
+      - key: SEPOLIA_RPC_URL
+        value: https://ethereum-sepolia-rpc.publicnode.com
+      - key: AGENT_REGISTRY_CONTRACT
+        sync: false
+      - key: ENCRYPTED_POSTS_CONTRACT
+        sync: false
+      - key: TRUST_SCORE_CONTRACT
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: STORACHA_SPACE_DID
+        sync: false
+      - key: STORACHA_PRINCIPAL
+        sync: false
+      - key: STORACHA_EMAIL
+        sync: false

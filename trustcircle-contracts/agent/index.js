@@ -5,6 +5,7 @@ const Groq = require('groq-sdk')
 const cron = require('node-cron')
 const fs = require('fs')
 const path = require('path')
+const express = require('express')
 
 // ─── Validate env ─────────────────────────────────────────────────
 const required = ['PRIVATE_KEY', 'SEPOLIA_RPC_URL', 'AGENT_REGISTRY_CONTRACT', 'ENCRYPTED_POSTS_CONTRACT', 'TRUST_SCORE_CONTRACT', 'GROQ_API_KEY']
@@ -16,6 +17,18 @@ for (const key of required) {
 const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL)
 const wallet = new ethers.Wallet(process.env.PRIVATE_KEY, provider)
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY })
+
+// ─── State ────────────────────────────────────────────────────────
+let agentId = null
+let lastScannedBlock = 0
+
+const executionLog = {
+  agentId: null, operator: wallet.address,
+  startTime: new Date().toISOString(), tasks: [],
+  stats: { totalRuns: 0, tasksCompleted: 0, tasksFailed: 0, botsDetected: 0, alertsGenerated: 0, apiCallsUsed: 0, filecoinUploads: 0, onChainTxs: 0 },
+}
+
+const COMPUTE_BUDGET = { maxApiCallsPerRun: 20 }
 
 // ─── Storacha (optional — falls back to local save) ───────────────
 async function uploadToFilecoin(data, filename) {
@@ -70,18 +83,6 @@ const TRUST_ABI = [
 const agentRegistry = new ethers.Contract(process.env.AGENT_REGISTRY_CONTRACT, AGENT_ABI, wallet)
 const postsContract = new ethers.Contract(process.env.ENCRYPTED_POSTS_CONTRACT, POSTS_ABI, provider)
 const trustContract = new ethers.Contract(process.env.TRUST_SCORE_CONTRACT, TRUST_ABI, provider)
-
-// ─── State ────────────────────────────────────────────────────────
-let agentId = null
-let lastScannedBlock = 0
-
-const executionLog = {
-  agentId: null, operator: wallet.address,
-  startTime: new Date().toISOString(), tasks: [],
-  stats: { totalRuns: 0, tasksCompleted: 0, tasksFailed: 0, botsDetected: 0, alertsGenerated: 0, apiCallsUsed: 0, filecoinUploads: 0, onChainTxs: 0 },
-}
-
-const COMPUTE_BUDGET = { maxApiCallsPerRun: 20 }
 
 // ─── Helpers ──────────────────────────────────────────────────────
 function logTask(type, description, success, data = {}) {
@@ -345,4 +346,66 @@ async function main() {
   }
 }
 
-main().catch(err => { console.error('Fatal:', err); process.exit(1) })
+// ─── Express Server (Required for Render Web Services) ────────────
+const app = express()
+const PORT = process.env.PORT || 3000
+
+app.use(express.json())
+
+// Health check endpoint (required for Render)
+app.get('/', (req, res) => {
+  res.json({
+    status: 'TrustCircle AI Agent Running',
+    agentId: agentId || 'Not registered yet',
+    operator: wallet?.address || 'Not initialized',
+    uptime: process.uptime(),
+    stats: executionLog.stats,
+    lastActivity: new Date().toISOString()
+  })
+})
+
+// Agent status endpoint
+app.get('/status', (req, res) => {
+  res.json({
+    agentId: agentId,
+    operator: wallet?.address,
+    stats: executionLog.stats,
+    recentTasks: executionLog.tasks.slice(-10),
+    isRunning: true
+  })
+})
+
+// Manual trigger endpoints (useful for testing)
+app.post('/trigger/bot-check', async (req, res) => {
+  try {
+    await pollForNewPosts()
+    res.json({ success: true, message: 'Bot check triggered' })
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+app.post('/trigger/sentiment', async (req, res) => {
+  try {
+    const latest = await provider.getBlockNumber()
+    const events = await postsContract.queryFilter(postsContract.filters.PostCreated(), Math.max(0, latest - 300), latest)
+    const postIds = events.map(e => e.args?.postId).filter(Boolean)
+    if (postIds.length === 0) {
+      return res.json({ success: true, message: 'No recent posts to analyze' })
+    }
+    const sentiment = await analyzeSentimentBatch(postIds)
+    res.json({ success: true, sentiment, postsAnalyzed: postIds.length })
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
+// Start the HTTP server and then initialize the agent
+app.listen(PORT, () => {
+  console.log(`🌐 TrustCircle Agent API running on port ${PORT}`)
+  console.log(`📊 Status: http://localhost:${PORT}/`)
+  console.log(`🔍 Health: http://localhost:${PORT}/status`)
+  
+  // Initialize the agent after server starts
+  main().catch(err => { console.error('Fatal:', err); process.exit(1) })
+})
