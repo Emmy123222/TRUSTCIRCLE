@@ -370,11 +370,30 @@ async function main() {
   await registerAgent()
   await uploadLog()
 
-  // Start HTTP Server
-  app.listen(PORT, () => {
+  // Start HTTP Server with error handling
+  const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🌐 API Server running on port ${PORT}`)
     console.log(`   Status: http://localhost:${PORT}/`)
     console.log(`   API: http://localhost:${PORT}/api/status`)
+  })
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`❌ Port ${PORT} is already in use. Trying alternative port...`)
+      const altPort = PORT + 1
+      const altServer = app.listen(altPort, '0.0.0.0', () => {
+        console.log(`\n🌐 API Server running on alternative port ${altPort}`)
+        console.log(`   Status: http://localhost:${altPort}/`)
+        console.log(`   API: http://localhost:${altPort}/api/status`)
+      })
+      altServer.on('error', (altErr) => {
+        console.error(`❌ Failed to start server on port ${altPort}:`, altErr.message)
+        process.exit(1)
+      })
+    } else {
+      console.error(`❌ Server error:`, err.message)
+      process.exit(1)
+    }
   })
 
   // Poll every 30 seconds — no WebSocket needed
@@ -427,6 +446,23 @@ async function main() {
   if (!process.env.STORACHA_SPACE_DID) {
     console.log('\n  💡 Add STORACHA_EMAIL + STORACHA_SPACE_DID to .env to enable Filecoin uploads')
   }
+
+  // Graceful shutdown
+  process.on('SIGTERM', () => {
+    console.log('\n🛑 Received SIGTERM, shutting down gracefully...')
+    server.close(() => {
+      console.log('✅ Server closed')
+      process.exit(0)
+    })
+  })
+
+  process.on('SIGINT', () => {
+    console.log('\n🛑 Received SIGINT, shutting down gracefully...')
+    server.close(() => {
+      console.log('✅ Server closed')
+      process.exit(0)
+    })
+  })
 }
 
 if (require.main === module) {

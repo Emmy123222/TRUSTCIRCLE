@@ -72,18 +72,23 @@ npx hardhat verify --network sepolia 0x5C1CE48302B96a177E1d76AB2A6b63fb09750917
 
 ## Deployed Services
 
+### Frontend Application
+- **URL**: https://trustcircle-sigma.vercel.app/
+- **Platform**: Vercel
+- **Status**: ✅ Live
+- **Features**: Demo mode enabled, AI agent integration, multi-chain support
+
 ### AI Agent (ERC-8004 Compliant)
 - **URL**: https://trustcircle.onrender.com
 - **Platform**: Render
 - **Status**: ✅ Active
 - **Features**: Bot detection, sentiment analysis, daily digests
 - **Agent Identity**: `0xc696a2e9afaaf6b9b2a31e94b87bdc72b066b540279f78ff01d43f63e1a63af8`
-- **Deployment**: March 31, 2026
 
-### Frontend Application
-- **Status**: Ready for deployment
-- **Recommended Platforms**: Vercel, Netlify, Render
-- **Demo Mode**: ✅ Enabled (works without wallet connection)
+### Smart Contracts
+- **Status**: ✅ Deployed across 3 networks
+- **Networks**: Sepolia (fhEVM), Flow Testnet, Filecoin Calibration
+- **Deployment Date**: March 26, 2026
 
 ---
 

@@ -56,11 +56,11 @@ npx hardhat compile
 ## 📦 Deployment
 
 ### Live Services
+- **Frontend**: https://trustcircle-sigma.vercel.app/ ✅ Live
 - **AI Agent**: https://trustcircle.onrender.com ✅ Active
-- **Frontend**: Ready for deployment
 
 ### Frontend
-- **Vercel**: `vercel --prod`
+- **Vercel**: `vercel --prod` ✅ Deployed
 - **Netlify**: Drag `dist` folder after `npm run build`
 - **GitHub Pages**: `npm run deploy`
 
