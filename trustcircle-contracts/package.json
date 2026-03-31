@@ -1,0 +1,35 @@
+{
+  "name": "trustcircle-contracts",
+  "version": "1.0.0",
+  "description": "TrustCircle smart contracts — Zama fhEVM, Flow, Filecoin, ERC-8004",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:sepolia": "hardhat run scripts/deploy-zama.ts --network sepolia",
+    "deploy:flow": "node scripts/deploy-flow.js",
+    "deploy:filecoin": "hardhat run scripts/deploy-filecoin.ts --network calibrationnet",
+    "deploy:erc8004": "hardhat run scripts/deploy-erc8004.ts --network sepolia",
+    "deploy:all": "npm run deploy:sepolia && npm run deploy:erc8004 && npm run deploy:filecoin",
+    "agent:start": "node agent/index.js",
+    "verify": "hardhat verify --network sepolia"
+  },
+  "dependencies": {
+    "@fhevm/hardhat-plugin": "^0.4.2",
+    "@fhevm/solidity": "^0.11.1",
+    "@storacha/client": "^1.0.0",
+    "axios": "^1.6.7",
+    "dotenv": "^16.4.1",
+    "ethers": "^6.11.0",
+    "fhevmjs": "^0.5.8",
+    "groq-sdk": "^1.1.2",
+    "node-cron": "^3.0.3"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^5.0.1",
+    "@types/node": "^20.11.5",
+    "hardhat": "^2.20.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}

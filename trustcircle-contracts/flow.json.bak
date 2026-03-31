@@ -1,0 +1,40 @@
+{
+  "networks": {
+    "mainnet": "access.mainnet.nodes.onflow.org:9000",
+    "testnet": "access.devnet.nodes.onflow.org:9000",
+    "emulator": "127.0.0.1:3569"
+  },
+  "accounts": {
+    "emulator-account": {
+      "address": "f8d6e0586b0a20c7",
+      "key": "2eae2f31cb5b756151fa11d82949c634b8f28796a40d23f07669a8eba7af8e6e"
+    },
+    "trustcircle-testnet": {
+      "address": "$FLOW_ACCOUNT_ADDRESS",
+      "key": {
+        "type": "hex",
+        "index": 0,
+        "signatureAlgorithm": "ECDSA_P256",
+        "hashAlgorithm": "SHA3_256",
+        "privateKey": "$FLOW_PRIVATE_KEY"
+      }
+    }
+  },
+  "contracts": {
+    "TrustCircleSocial": {
+      "source": "./cadence/contracts/TrustCircleSocial.cdc",
+      "aliases": {
+        "emulator": "f8d6e0586b0a20c7",
+        "testnet": "$FLOW_ACCOUNT_ADDRESS"
+      }
+    }
+  },
+  "deployments": {
+    "emulator": {
+      "emulator-account": ["TrustCircleSocial"]
+    },
+    "testnet": {
+      "trustcircle-testnet": ["TrustCircleSocial"]
+    }
+  }
+}

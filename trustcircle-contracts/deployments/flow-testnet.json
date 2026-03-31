@@ -1,0 +1,8 @@
+{
+  "network": "testnet",
+  "deployedAt": "2026-03-26T11:28:40.433Z",
+  "deployer": "0x7a79d79c5acf824b",
+  "contracts": {
+    "TrustCircleSocial": "0x7a79d79c5acf824b"
+  }
+}

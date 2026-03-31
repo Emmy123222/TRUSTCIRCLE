@@ -1,0 +1,9 @@
+{
+  "network": "calibrationnet",
+  "chainId": 314159,
+  "deployedAt": "2026-03-26T11:28:01.402Z",
+  "deployer": "0x21384CDe50cF0BC2d7A3B5ee8abd19ccaeb50EEF",
+  "contracts": {
+    "FilecoinContentRegistry": "0x13dAD754D9DAE6dDFd00dAcBcacf89fDbA7d05A0"
+  }
+}

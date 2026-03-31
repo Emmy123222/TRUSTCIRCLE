@@ -1,0 +1,23 @@
+{
+  "name": "trustcircle-agent",
+  "version": "1.0.0",
+  "description": "TrustCircle AI Agent - ERC-8004 compliant bot detection and sentiment analysis",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.0.0",
+    "ethers": "^6.11.0",
+    "groq-sdk": "^0.3.0",
+    "node-cron": "^3.0.0",
+    "@storacha/client": "^1.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": ["ai", "blockchain", "erc-8004", "bot-detection", "sentiment-analysis"],
+  "author": "TrustCircle",
+  "license": "MIT"
+}

@@ -1,0 +1,7 @@
+node_modules/
+.env
+*.log
+agent_log.json
+task_*.json
+agent.json
+.DS_Store

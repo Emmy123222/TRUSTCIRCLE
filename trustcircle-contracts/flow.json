@@ -1,0 +1,33 @@
+{
+  "networks": {
+    "testnet": "access.devnet.nodes.onflow.org:9000",
+    "mainnet": "access.mainnet.nodes.onflow.org:9000"
+  },
+  "accounts": {
+    "trustcircle-testnet": {
+      "address": "0x7a79d79c5acf824b",
+      "key": {
+        "type": "hex",
+        "index": 0,
+        "signatureAlgorithm": "ECDSA_P256",
+        "hashAlgorithm": "SHA3_256",
+        "privateKey": "0x8b84559bbc834106d69dd04b301612531bdc121846af9eadc140ee713e783136"
+      }
+    }
+  },
+  "contracts": {
+    "TrustCircleSocial": {
+      "source": "./cadence/contracts/TrustCircleSocial.cdc",
+      "aliases": {
+        "testnet": "0x7a79d79c5acf824b"
+      }
+    }
+  },
+  "deployments": {
+    "testnet": {
+      "trustcircle-testnet": [
+        "TrustCircleSocial"
+      ]
+    }
+  }
+}
