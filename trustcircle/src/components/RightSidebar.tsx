@@ -3,6 +3,7 @@ import { TrendingUp, Zap, Shield, Loader } from 'lucide-react'
 import { useAppStore } from '../lib/store'
 import { useWalletContext } from '../hooks/useWallet'
 import { TrustBadge } from './TrustBadge'
+import { AgentStatus } from './AgentStatus'
 import { ethers } from 'ethers'
 import { ENCRYPTED_POSTS_ABI, CONTRACT_ADDRESSES } from '../lib/contracts'
 
@@ -68,6 +69,9 @@ export function RightSidebar() {
 
   return (
     <aside className="w-72 flex-shrink-0 space-y-4">
+      {/* AI Agent Status */}
+      <AgentStatus />
+
       {/* Trending tags */}
       <div className="card-panel rounded-xl p-4">
         <div className="flex items-center gap-2 mb-3">

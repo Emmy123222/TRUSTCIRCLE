@@ -285,6 +285,82 @@ async function registerAgent() {
 }
 
 // ─── Main ─────────────────────────────────────────────────────────
+// HTTP Server for Frontend API
+const express = require('express')
+const cors = require('cors')
+const app = express()
+const PORT = process.env.PORT || 3000
+
+app.use(cors())
+app.use(express.json())
+
+// API Endpoints
+app.get('/', (req, res) => {
+  res.json({
+    status: 'active',
+    agent: 'TrustCircle AI Agent',
+    version: '1.0.0',
+    uptime: process.uptime(),
+    stats: executionLog.stats
+  })
+})
+
+app.get('/api/status', (req, res) => {
+  res.json({
+    status: 'active',
+    agent_address: wallet.address,
+    stats: executionLog.stats,
+    last_activity: executionLog.tasks.slice(-1)[0]?.timestamp || null
+  })
+})
+
+app.get('/api/stats', (req, res) => {
+  res.json(executionLog.stats)
+})
+
+app.get('/api/recent-activity', (req, res) => {
+  const limit = parseInt(req.query.limit) || 10
+  res.json({
+    recent_tasks: executionLog.tasks.slice(-limit),
+    total_tasks: executionLog.tasks.length
+  })
+})
+
+app.post('/api/analyze-wallet', async (req, res) => {
+  try {
+    const { address } = req.body
+    if (!address) return res.status(400).json({ error: 'Address required' })
+    
+    const analysis = await analyzeWallet(address)
+    res.json({ address, analysis })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.post('/api/analyze-sentiment', async (req, res) => {
+  try {
+    const { postIds } = req.body
+    if (!postIds || !Array.isArray(postIds)) {
+      return res.status(400).json({ error: 'postIds array required' })
+    }
+    
+    const sentiment = await analyzeSentimentBatch(postIds)
+    res.json({ postIds, sentiment })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
+app.get('/api/digest', async (req, res) => {
+  try {
+    const digest = await generateDigest()
+    res.json({ digest, generated_at: new Date().toISOString() })
+  } catch (error) {
+    res.status(500).json({ error: error.message })
+  }
+})
+
 async function main() {
   console.log('═'.repeat(60))
   console.log(' 🤖 TrustCircle AI Agent')
@@ -294,6 +370,13 @@ async function main() {
 
   await registerAgent()
   await uploadLog()
+
+  // Start HTTP Server
+  app.listen(PORT, () => {
+    console.log(`\n🌐 API Server running on port ${PORT}`)
+    console.log(`   Status: http://localhost:${PORT}/`)
+    console.log(`   API: http://localhost:${PORT}/api/status`)
+  })
 
   // Poll every 30 seconds — no WebSocket needed
   console.log('\n👂 Polling for PostCreated events every 30s…')
@@ -337,6 +420,7 @@ async function main() {
   })
 
   console.log('\n✅ Agent live.\n')
+  console.log('  • HTTP API:       port', PORT)
   console.log('  • Post polling:   every 30 seconds')
   console.log('  • Sentiment:      every hour')
   console.log('  • Daily digest:   8:00 AM UTC')
@@ -346,23 +430,9 @@ async function main() {
   }
 }
 
-// ─── Express Server (Required for Render Web Services) ────────────
-const app = express()
-const PORT = process.env.PORT || 3000
-
-app.use(express.json())
-
-// Health check endpoint (required for Render)
-app.get('/', (req, res) => {
-  res.json({
-    status: 'TrustCircle AI Agent Running',
-    agentId: agentId || 'Not registered yet',
-    operator: wallet?.address || 'Not initialized',
-    uptime: process.uptime(),
-    stats: executionLog.stats,
-    lastActivity: new Date().toISOString()
-  })
-})
+if (require.main === module) {
+  main().catch(console.error)
+}
 
 // Agent status endpoint
 app.get('/status', (req, res) => {

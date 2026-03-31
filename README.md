@@ -55,6 +55,10 @@ npx hardhat compile
 
 ## 📦 Deployment
 
+### Live Services
+- **AI Agent**: https://trustcircle.onrender.com ✅ Active
+- **Frontend**: Ready for deployment
+
 ### Frontend
 - **Vercel**: `vercel --prod`
 - **Netlify**: Drag `dist` folder after `npm run build`
@@ -62,7 +66,7 @@ npx hardhat compile
 
 ### AI Agent
 - **Railway**: Deploy from GitHub (recommended)
-- **Render**: Connect repository
+- **Render**: Connect repository ✅ Deployed
 - **Heroku**: `git push heroku main`
 
 ## 🔧 Environment Setup

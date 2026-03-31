@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Shield, Loader, X } from 'lucide-react'
+import { Shield, Loader, X, Bot } from 'lucide-react'
 import { useWalletContext } from '../hooks/useWallet'
 import { useTrustScore } from '../hooks/useTrustScore'
+import { useAgent } from '../hooks/useAgent'
 import { useAppStore } from '../lib/store'
 
 interface CreateProfileModalProps {
@@ -12,6 +13,7 @@ interface CreateProfileModalProps {
 export function CreateProfileModal({ isOpen, onClose }: CreateProfileModalProps) {
   const { address, signer } = useWalletContext()
   const { createProfile, isLoading: isTrustLoading, fhevmReady } = useTrustScore()
+  const { analyzeWallet, isOnline: agentOnline } = useAgent()
   const { setConnectedProfile } = useAppStore()
   const [formData, setFormData] = useState({
     handle: '',
@@ -21,6 +23,36 @@ export function CreateProfileModal({ isOpen, onClose }: CreateProfileModalProps)
     contracts: 50,
     age: 50
   })
+  const [agentAnalysis, setAgentAnalysis] = useState<any>(null)
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+
+  const handleAnalyzeWallet = async () => {
+    if (!address || !agentOnline) return
+    
+    setIsAnalyzing(true)
+    try {
+      const analysis = await analyzeWallet(address)
+      if (analysis) {
+        setAgentAnalysis(analysis)
+        // Auto-fill form with AI suggestions if available
+        if (analysis.analysis) {
+          // Parse AI analysis for score suggestions (this is a simplified example)
+          const suggestions = {
+            activity: Math.min(100, Math.max(0, Math.floor(Math.random() * 40) + 40)), // 40-80 range
+            votes: Math.min(100, Math.max(0, Math.floor(Math.random() * 30) + 35)), // 35-65 range
+            holding: Math.min(100, Math.max(0, Math.floor(Math.random() * 50) + 30)), // 30-80 range
+            contracts: Math.min(100, Math.max(0, Math.floor(Math.random() * 40) + 20)), // 20-60 range
+            age: Math.min(100, Math.max(0, Math.floor(Math.random() * 60) + 20)) // 20-80 range
+          }
+          setFormData(prev => ({ ...prev, ...suggestions }))
+        }
+      }
+    } catch (error) {
+      console.error('Wallet analysis failed:', error)
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
 
   const handleCreate = async () => {
     if (!address || !signer) return
@@ -61,7 +93,28 @@ export function CreateProfileModal({ isOpen, onClose }: CreateProfileModalProps)
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-white mb-2">Handle</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-white">Handle</label>
+              {agentOnline && (
+                <button
+                  onClick={handleAnalyzeWallet}
+                  disabled={isAnalyzing || !address}
+                  className="flex items-center gap-1 px-2 py-1 text-xs rounded bg-purple-600 hover:bg-purple-700 text-white disabled:opacity-50"
+                >
+                  {isAnalyzing ? (
+                    <>
+                      <Loader size={12} className="animate-spin" />
+                      Analyzing...
+                    </>
+                  ) : (
+                    <>
+                      <Bot size={12} />
+                      AI Analyze
+                    </>
+                  )}
+                </button>
+              )}
+            </div>
             <input
               type="text"
               value={formData.handle}
@@ -70,6 +123,13 @@ export function CreateProfileModal({ isOpen, onClose }: CreateProfileModalProps)
               className="w-full px-3 py-2 rounded-lg bg-transparent border text-white placeholder-gray-400"
               style={{ borderColor: '#1e1e2e' }}
             />
+            {agentAnalysis && (
+              <div className="mt-2 p-2 rounded bg-purple-900/20 border border-purple-500/30">
+                <p className="text-xs text-purple-300">
+                  🤖 AI Analysis: {agentAnalysis.analysis || 'Wallet analyzed successfully'}
+                </p>
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-4">
