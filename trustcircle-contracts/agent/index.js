@@ -288,7 +288,10 @@ async function registerAgent() {
 // HTTP Server for Frontend API
 const cors = require('cors')
 const app = express()
-const PORT = process.env.PORT || 3000
+const PORT = parseInt(process.env.PORT) || 3000
+
+console.log(`🔍 Debug: PORT env var = "${process.env.PORT}" (type: ${typeof process.env.PORT})`)
+console.log(`🔍 Debug: Parsed PORT = ${PORT} (type: ${typeof PORT})`)
 
 app.use(cors())
 app.use(express.json())
@@ -373,27 +376,17 @@ async function main() {
   // Start HTTP Server with error handling
   const server = app.listen(PORT, '0.0.0.0', () => {
     console.log(`\n🌐 API Server running on port ${PORT}`)
-    console.log(`   Status: http://localhost:${PORT}/`)
-    console.log(`   API: http://localhost:${PORT}/api/status`)
+    console.log(`   Status: http://0.0.0.0:${PORT}/`)
+    console.log(`   API: http://0.0.0.0:${PORT}/api/status`)
   })
 
   server.on('error', (err) => {
-    if (err.code === 'EADDRINUSE') {
-      console.error(`❌ Port ${PORT} is already in use. Trying alternative port...`)
-      const altPort = PORT + 1
-      const altServer = app.listen(altPort, '0.0.0.0', () => {
-        console.log(`\n🌐 API Server running on alternative port ${altPort}`)
-        console.log(`   Status: http://localhost:${altPort}/`)
-        console.log(`   API: http://localhost:${altPort}/api/status`)
-      })
-      altServer.on('error', (altErr) => {
-        console.error(`❌ Failed to start server on port ${altPort}:`, altErr.message)
-        process.exit(1)
-      })
-    } else {
-      console.error(`❌ Server error:`, err.message)
-      process.exit(1)
-    }
+    console.error(`❌ Server failed to start on port ${PORT}:`, err.message)
+    console.error('This might be a Render configuration issue.')
+    console.error('Trying to continue without HTTP server...')
+    
+    // Continue with background tasks even if HTTP server fails
+    console.log('\n⚠️  Running in background-only mode (no HTTP API)')
   })
 
   // Poll every 30 seconds — no WebSocket needed
@@ -450,18 +443,28 @@ async function main() {
   // Graceful shutdown
   process.on('SIGTERM', () => {
     console.log('\n🛑 Received SIGTERM, shutting down gracefully...')
-    server.close(() => {
-      console.log('✅ Server closed')
+    if (server && server.listening) {
+      server.close(() => {
+        console.log('✅ Server closed')
+        process.exit(0)
+      })
+    } else {
+      console.log('✅ Background tasks stopped')
       process.exit(0)
-    })
+    }
   })
 
   process.on('SIGINT', () => {
     console.log('\n🛑 Received SIGINT, shutting down gracefully...')
-    server.close(() => {
-      console.log('✅ Server closed')
+    if (server && server.listening) {
+      server.close(() => {
+        console.log('✅ Server closed')
+        process.exit(0)
+      })
+    } else {
+      console.log('✅ Background tasks stopped')
       process.exit(0)
-    })
+    }
   })
 }
 
