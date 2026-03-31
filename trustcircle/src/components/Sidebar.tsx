@@ -27,8 +27,8 @@ export function Sidebar() {
       {/* Logo */}
       <div className="p-6 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(79,255,176,0.1)', border: '1px solid rgba(79,255,176,0.3)' }}>
-            <Shield size={16} style={{ color: '#4fffb0' }} />
+          <div className="w-8 h-8 flex items-center justify-center">
+            <img src="/logo-simple.svg" alt="TrustCircle" className="w-8 h-8" />
           </div>
           <div>
             <div className="font-syne font-bold text-white text-sm tracking-wider">TRUST<span style={{ color: '#4fffb0' }}>CIRCLE</span></div>
